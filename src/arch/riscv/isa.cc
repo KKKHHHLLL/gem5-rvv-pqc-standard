@@ -196,6 +196,9 @@ namespace RiscvISA
     [MISCREG_VTYPE]         = "VTYPE",
     [MISCREG_VLENB]         = "VLENB",
 
+    //Cyclic shift related
+    [MISCREG_CYCSHIFT]      = "CYCSHIFT",
+
     [MISCREG_NMIVEC]        = "NMIVEC",
     [MISCREG_NMIE]          = "NMIE",
     [MISCREG_NMIP]          = "NMIP",

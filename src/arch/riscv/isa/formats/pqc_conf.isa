@@ -1,0 +1,25 @@
+let {{
+    def pqc_conf_codegen(Name):
+        if Name.find("Cyclic_shift_conf")!=-1:
+            return '''
+                uint16_t shift_offset=Rs1_uw;
+
+                tc->setMiscReg(MISCREG_CYCSHIFT,shift_offset);
+
+                Rd=shift_offset;
+
+                tc->getDecoderPtr()->as<Decoder>().setCyclicShift(shift_offset);
+            '''
+        else:
+            return '''
+            '''
+}};
+
+def format PqcConfOp(code, *flags) {{
+    conf_code=pqc_conf_codegen(Name);
+    iop = InstObjParams(name, Name, 'PqcConfOp', {'code':code,'conf_code':conf_code}, flags)
+    header_output = BasicDeclare.subst(iop)
+    decoder_output = BasicConstructor.subst(iop)
+    decode_block = BasicDecode.subst(iop)
+    exec_output = PqcConfExecute.subst(iop)
+}};

@@ -197,6 +197,9 @@ enum MiscRegIndex
     MISCREG_VTYPE,
     MISCREG_VLENB,
 
+    //Cyclic shift related
+    MISCREG_CYCSHIFT,
+
     // These registers are not in the standard, hence does not exist in the
     // CSRData map. These are mainly used to provide a minimal implementation
     // for non-maskable-interrupt in our simple cpu.
@@ -385,7 +388,10 @@ enum CSRIndex
     CSR_VCSR         = 0x00F,
     CSR_VL           = 0xC20,
     CSR_VTYPE        = 0xC21,
-    CSR_VLENB        = 0xC22
+    CSR_VLENB        = 0xC22,
+
+    //Cyclic Shift related
+    CSR_CYCSHIFT     = 0xC23
 };
 
 struct CSRMetadata
@@ -563,7 +569,9 @@ const std::map<int, CSRMetadata> CSRData = {
     {CSR_VCSR,         {"vcsr"  , MISCREG_VCSR}},
     {CSR_VL,           {"vl"    , MISCREG_VL}},
     {CSR_VTYPE,        {"vtype" , MISCREG_VTYPE}},
-    {CSR_VLENB,        {"VLENB" , MISCREG_VLENB}}
+    {CSR_VLENB,        {"VLENB" , MISCREG_VLENB}},
+
+    {CSR_CYCSHIFT,     {"cycshift", MISCREG_CYCSHIFT}}
 };
 
 /**

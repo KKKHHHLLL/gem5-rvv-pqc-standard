@@ -64,7 +64,9 @@ class OpClass(Enum):
             'VectorWholeRegisterLoad', 'VectorWholeRegisterStore',
             'VectorIntegerArith', 'VectorFloatArith', 'VectorFloatConvert',
             'VectorIntegerReduce', 'VectorFloatReduce',
-            'VectorMisc', 'VectorIntegerExtension', 'VectorConfig'
+            'VectorMisc', 'VectorIntegerExtension', 'VectorConfig',
+            'PqcConfig',
+            'PqcWholeVec'
             ]
 
 class OpDesc(SimObject):

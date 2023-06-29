@@ -1,0 +1,15 @@
+def template PqcConfExecute {{
+    Fault
+    %(class_name)s::execute(ExecContext *xc,
+        Trace::InstRecord *traceData) const
+    {
+        auto tc = xc->tcBase();
+
+        %(op_decl)s;
+        %(op_rd)s;
+        %(conf_code)s;
+
+        %(op_wb)s;
+        return NoFault;
+    }
+}};

@@ -1,0 +1,115 @@
+let {{
+    def pqc_wholevec_codegen(Name):
+        if Name.find("Cyclic_shift_left")!=-1:
+            return '''
+                //read cyclic shift amount from CSR
+                uint16_t shift_offset=xc->readMiscReg(MISCREG_CYCSHIFT);
+
+                // get destination vector register Vd
+                auto &tmp_d0 = *(RiscvISA::VecRegContainer *)
+                                xc->getWritableRegOperand(this, 0);
+                auto Vd = tmp_d0.as<uint8_t>();
+                // get source vector register 
+                RiscvISA::VecRegContainer tmp_s0;
+                xc->getRegOperand(this, 0, &tmp_s0);
+                auto Vs1 = tmp_s0.as<uint8_t>();
+                RiscvISAInst::VecRegContainer tmp_s1;
+                xc->getRegOperand(this, 1,&tmp_s1);
+                auto Vs2 = tmp_s1.as<uint8_t>();
+
+                uint8_t len=gem5::RiscvISA::VLENB;
+                uint8_t temp[gem5::RiscvISA::VLENB<<1];
+
+                assert(gem5::RiscvISA::VLEN>shift_offset);
+                const uint16_t veclen=gem5::RiscvISA::VLENB;
+
+                for(int i=0;i<veclen;i++){
+                    temp[i]=Vs1[i];
+                    temp[i+veclen]=Vs2[i];
+                }
+                //within 8bit shift
+                uint8_t shift_offset1 = shift_offset & 7;
+                for (int i = 2 * veclen - 1; i > 0; i--) {
+                    temp[i] = (((uint16_t)temp[i] << 8 | (uint16_t)temp[i - 1]) << shift_offset1)>>8;
+                }
+                temp[0] <<= shift_offset1;
+                //geq 8bits shift
+                uint16_t shift_offset2 = shift_offset >> 3;
+                uint16_t chunk_offset = 1;
+                while (len > 1) {
+                    if (shift_offset2 & 1) {
+                        for (int i = 2*veclen - 1; i >= chunk_offset; i--) {
+                            temp[i] = temp[i - chunk_offset];
+                        }
+                        for (int i = 0; i < chunk_offset; i++) {
+                            temp[i] = 0;
+                        }
+                    }
+                    shift_offset2 >>= 1;
+                    len >>= 1;
+                    chunk_offset <<= 1;
+                }
+                //wb
+                for(int i=0;i<veclen;i++)Vd[i]=temp[i+veclen];
+
+                xc->setRegOperand(this, 0, &tmp_d0);
+                if (traceData) {
+                    traceData->setData(tmp_d0);
+                }
+            '''
+        elif Name.find("Clmul64")!=-1 :
+            return '''
+                auto &tmp_d0 = *(RiscvISA::VecRegContainer *)
+                                xc->getWritableRegOperand(this, 0);
+                auto Vd = tmp_d0.as<uint64_t>();
+                // get source vector register, only the first 64bit in vsrc is used
+                RiscvISA::VecRegContainer tmp_s0;
+                xc->getRegOperand(this, 0, &tmp_s0);
+                auto Vs1 = tmp_s0.as<uint64_t>();
+                RiscvISAInst::VecRegContainer tmp_s1;
+                xc->getRegOperand(this, 1,&tmp_s1);
+                auto Vs2 = tmp_s1.as<uint64_t>();
+
+                assert(gem5::RiscvISA::NumVecElemPerVecReg>=2);//produce a 128bit result
+
+                uint64_t temp[64][2]={0};
+
+                uint64_t b=Vs1[0];//from h_matrix
+
+                uint64_t a=Vs2[0];
+
+                for(int i=0;i<64;i++){
+                    if((b&1)==1){
+                        temp[i][0]=i==0?a:a<<i;
+                        temp[i][1]=i==0?0:a>>(64-i);
+                    }
+                    b>>=1;
+                }
+
+                for(int j=32;j>0;j>>=1){
+                    for(int i=0;i<j;i++){
+                        temp[i][0]^=temp[i+j][0];
+                        temp[i][1]^=temp[i+j][1];
+                    }
+                }
+
+                Vd[0]=temp[0][0], Vd[1]=temp[0][1];
+
+                xc->setRegOperand(this, 0, &tmp_d0);
+                if (traceData) {
+                    traceData->setData(tmp_d0);
+                }
+            '''
+        else:
+            return '''
+            '''
+}};
+
+def format PqcWholeVecOp(code, *flags) {{
+    exe_code=pqc_wholevec_codegen(Name);
+    iop = InstObjParams(name, Name, 'PqcWholeVecArithOp', {'code':code,'exe_code':exe_code}, flags)
+    header_output = BasicDeclare.subst(iop)
+    decoder_output = BasicConstructor.subst(iop)
+    decode_block = BasicDecode.subst(iop)
+    exec_output = PqcWholeVecExecute.subst(iop)
+}};

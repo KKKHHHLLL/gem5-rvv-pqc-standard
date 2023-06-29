@@ -36,6 +36,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from inspect import FullArgSpec
 from m5.defines import buildEnv
 from m5.params import *
 from m5.proxy import *
@@ -176,6 +177,14 @@ class MinorDefaultMiscFU(MinorFU):
     opClasses = minorMakeOpClassSet(['IprAccess', 'InstPrefetch'])
     opLat = 1
 
+class MinorDefaultPqcConfigFU(MinorFU):
+    opClasses = minorMakeOpClassSet(['PqcConfig'])
+    opLat = 1
+
+class MinorDefaultPqcWholeVecFU(MinorFU):
+    opClasses = minorMakeOpClassSet(['PqcWholeVec'])
+    opLat = 1
+
 class MinorDefaultVecFU(MinorFU):
     opClasses = minorMakeOpClassSet([
             'VectorUnitStrideLoad', 'VectorUnitStrideStore',
@@ -194,7 +203,11 @@ class MinorDefaultFUPool(MinorFUPool):
     funcUnits = [MinorDefaultIntFU(), MinorDefaultIntFU(),
         MinorDefaultIntMulFU(), MinorDefaultIntDivFU(),
         MinorDefaultFloatSimdFU(), MinorDefaultPredFU(),
-        MinorDefaultMemFU(), MinorDefaultVecFU(), MinorDefaultMiscFU()]
+        MinorDefaultMemFU(), MinorDefaultVecFU(), MinorDefaultMiscFU(),
+        #PQC FUs
+        MinorDefaultPqcConfigFU(),
+        MinorDefaultPqcWholeVecFU()
+        ]
 
 class ThreadPolicy(Enum): vals = ['SingleThreaded', 'RoundRobin', 'Random']
 

@@ -53,6 +53,7 @@ class Decoder : public InstDecoder
     bool aligned;
     bool mid;
     bool vConfigDone;
+    bool pqcConfigDone;
   protected:
     //The extended machine instruction being generated
     ExtMachInst emi;
@@ -60,6 +61,7 @@ class Decoder : public InstDecoder
 
     VTYPE machVtype;
     uint32_t machVl;
+    uint16_t cyclicShiftOffset;
 
     /// A cache of decoded instruction objects.
     static GenericISA::BasicDecodeCache<Decoder, ExtMachInst> defaultCache;
@@ -84,6 +86,9 @@ class Decoder : public InstDecoder
     inline bool vconf(ExtMachInst inst) {
       return inst.opcode7 == 0b1010111u && inst.width == 0b111u;
     }
+    inline bool pqcconf(ExtMachInst inst){
+      return inst.opcode7==0b0001011u&&inst.funct7==0b0000000u;
+    }
 
     //Use this to give data to the decoder. This should be used
     //when there is control flow.
@@ -92,6 +97,9 @@ class Decoder : public InstDecoder
     StaticInstPtr decode(PCStateBase &nextPC) override;
 
     void setVlAndVtype(uint32_t vl, VTYPE vtype);
+    void setCyclicShift(uint16_t shiftOffset);
+
+    inline uint16_t getCyclicShiftOffset(){return cyclicShiftOffset;}
 };
 
 } // namespace RiscvISA

@@ -1,0 +1,13 @@
+def template PqcWholeVecExecute{{
+
+Fault
+%(class_name)s::execute(ExecContext* xc,
+                                  Trace::InstRecord* traceData) const
+{
+
+    %(exe_code)s;
+
+    return NoFault;
+}
+
+}};

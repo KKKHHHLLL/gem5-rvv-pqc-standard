@@ -45,6 +45,7 @@ void Decoder::reset()
     aligned = true;
     mid = false;
     vConfigDone = true;
+    pqcConfigDone = true;
     machInst = 0;
     emi = 0;
 }
@@ -58,6 +59,13 @@ Decoder::moreBytes(const PCStateBase &pc, Addr fetchPC)
         outOfBytes = false;
         stall = true;
         return;
+    }
+    else if(GEM5_UNLIKELY(!this->pqcConfigDone)){
+        DPRINTF(Decode, "Waiting for pqc configuration instruction to be executed\n");
+        instDone = false;
+        outOfBytes = false;
+        stall = true;
+        return; 
     }
     stall = false;
 
@@ -96,6 +104,9 @@ Decoder::moreBytes(const PCStateBase &pc, Addr fetchPC)
         emi.vill    = this->machVtype.vill;
         if (vconf(emi)) {
             this->vConfigDone = false; // set true when vconfig inst execute
+        }
+        else if(pqcconf(emi)){
+            this->pqcConfigDone=false;
         }
     }
 }
@@ -140,6 +151,13 @@ Decoder::setVlAndVtype(uint32_t vl, VTYPE vtype)
     this->machVl = vl;
 
     this->vConfigDone = true;
+}
+
+void
+Decoder::setCyclicShift(uint16_t shiftOffset)
+{
+    this->cyclicShiftOffset=shiftOffset;
+    this->pqcConfigDone=true;
 }
 
 } // namespace RiscvISA

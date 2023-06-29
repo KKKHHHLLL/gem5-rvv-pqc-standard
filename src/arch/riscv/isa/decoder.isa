@@ -372,6 +372,22 @@ decode QUADRANT default Unknown::unknown() {
         }
     }
     0x3: decode OPCODE {
+        0x02: decode FUNCT7{
+            format PqcConfOp{
+                0x00: cyclic_shift_conf({{
+                    Rd=Rs1_uw;//nonsense
+                }},PqcConfigOp);
+            }
+            format PqcWholeVecOp{
+                0x01: cyclic_shift_left({{
+                    Vd_vu[i]=Vs2_vu[i]+Vs1_vu[i];//nonsense
+                }},PqcWholeVecOp);
+                0x02: clmul64({{
+                    Vd_vu[i]=Vs2_vu[i]+Vs1_vu[i];//nonsense
+                }},PqcWholeVecOp);
+            }
+        }
+
         0x00: decode FUNCT3 {
             format Load {
                 0x0: lb({{

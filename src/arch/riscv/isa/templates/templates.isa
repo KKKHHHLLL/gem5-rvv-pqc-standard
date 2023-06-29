@@ -1,3 +1,5 @@
 // Include
 ##include "vector_mem.isa"
 ##include "vector_arith.isa"
+##include "pqc_conf.isa"
+##include "pqc_arith.isa"
